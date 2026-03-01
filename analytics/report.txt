@@ -1,0 +1,57 @@
+
+================================================================================
+           CLAUDE CODE ENTERPRISE GOVERNANCE - ANALYTICS REPORT
+================================================================================
+Generated: 2026-01-25 14:28:10
+
+EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+Total Tasks Analyzed:     25
+Total Sessions:           7
+Total Cost:              $14.34
+Completion Rate:          84.0%
+Health Status:            HEALTHY
+
+TOKEN USAGE
+--------------------------------------------------------------------------------
+Input Tokens:            483,000
+Output Tokens:           347,000
+Avg Tokens/Task:         33,200
+
+COST ANALYSIS
+--------------------------------------------------------------------------------
+Total Input Cost:        $3.54
+Total Output Cost:       $10.79
+Daily Burn Rate:         $2.39
+Monthly Projection:      $71.70
+Cost/Completed Task:     $0.5034
+
+COST BY MODEL
+--------------------------------------------------------------------------------
+claude-haiku-3-5-20241022                $0.03
+claude-opus-4-20250514                   $10.08
+claude-sonnet-4-20250514                 $4.22
+
+STATUS DISTRIBUTION
+--------------------------------------------------------------------------------
+completed             21.0 ( 84.0%)
+in_progress            2.0 (  8.0%)
+pending                1.0 (  4.0%)
+failed                 1.0 (  4.0%)
+
+TOP TASK PATTERNS
+--------------------------------------------------------------------------------
+Design database migration                    1
+Optimize React re-renders                    1
+Update dependencies with                     1
+Fix SQL injection                            1
+Review codebase for                          1
+Configure production deployment              1
+Set up staging                               1
+Add automated testing                        1
+Configure GitHub Actions                     1
+Write unit tests                             1
+
+================================================================================
+                              END OF REPORT
+================================================================================

@@ -1,0 +1,42 @@
+[
+  {
+    "content": "Analyze bundle size and performance",
+    "status": "completed",
+    "activeForm": "Analyzing bundle size and performance",
+    "id": "task-015",
+    "type": "analysis",
+    "timestamp": "2025-01-24T10:00:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 28000, "output": 12500 }
+  },
+  {
+    "content": "Implement code splitting for routes",
+    "status": "completed",
+    "activeForm": "Implementing code splitting for routes",
+    "id": "task-016",
+    "type": "feature",
+    "timestamp": "2025-01-24T11:30:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 16500, "output": 13200 }
+  },
+  {
+    "content": "Add lazy loading for images",
+    "status": "in_progress",
+    "activeForm": "Adding lazy loading for images",
+    "id": "task-017",
+    "type": "feature",
+    "timestamp": "2025-01-24T14:00:00Z",
+    "model": "claude-haiku-3-5-20241022",
+    "tokens": { "input": 7800, "output": 5100 }
+  },
+  {
+    "content": "Optimize React re-renders",
+    "status": "pending",
+    "activeForm": "Optimizing React re-renders",
+    "id": "task-018",
+    "type": "optimization",
+    "timestamp": "2025-01-24T15:30:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 9200, "output": 0 }
+  }
+]

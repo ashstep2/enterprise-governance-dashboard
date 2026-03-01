@@ -1,0 +1,46 @@
+{
+  "name": "enterprise-governance",
+  "version": "1.0.0",
+  "description": "Enterprise governance dashboard for AI coding tasks - analytics, compliance, and cost management",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "governance": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "report": "tsc && node dist/index.js",
+    "demo": "tsc && node dist/index.js --demo",
+    "server": "tsc && node dist/api.js",
+    "analytics": "cd analytics && python usage_analysis.py --demo",
+    "forecast": "cd analytics && python cost_forecasting.py --demo",
+    "mcp:build": "cd mcp-server && npm install && npm run build",
+    "mcp:start": "cd mcp-server && npm start",
+    "vercel:dev": "vercel dev",
+    "vercel:deploy": "vercel --prod",
+    "test": "echo 'Tests would run here'",
+    "lint": "echo 'Linting would run here'"
+  },
+  "keywords": [
+    "governance",
+    "enterprise",
+    "analytics",
+    "compliance",
+    "ai-coding"
+  ],
+  "author": "Enterprise Governance Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/enterprise-governance.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.10.0",
+    "@vercel/node": "^3.0.0",
+    "vercel": "^37.0.0"
+  }
+}

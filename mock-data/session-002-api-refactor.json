@@ -1,0 +1,32 @@
+[
+  {
+    "content": "Refactor API endpoint structure",
+    "status": "completed",
+    "activeForm": "Refactoring API endpoint structure",
+    "id": "task-004",
+    "type": "refactor",
+    "timestamp": "2025-01-21T14:00:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 22000, "output": 18500 }
+  },
+  {
+    "content": "Update REST endpoints to v2",
+    "status": "completed",
+    "activeForm": "Updating REST endpoints to v2",
+    "id": "task-005",
+    "type": "refactor",
+    "timestamp": "2025-01-21T15:20:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 18000, "output": 14200 }
+  },
+  {
+    "content": "Fix breaking changes in client",
+    "status": "completed",
+    "activeForm": "Fixing breaking changes in client",
+    "id": "task-006",
+    "type": "bugfix",
+    "timestamp": "2025-01-21T16:45:00Z",
+    "model": "claude-haiku-3-5-20241022",
+    "tokens": { "input": 5500, "output": 3200 }
+  }
+]

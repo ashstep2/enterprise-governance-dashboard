@@ -1,0 +1,42 @@
+[
+  {
+    "content": "Review codebase for security vulnerabilities",
+    "status": "completed",
+    "activeForm": "Reviewing codebase for security vulnerabilities",
+    "id": "task-011",
+    "type": "security",
+    "timestamp": "2025-01-23T09:00:00Z",
+    "model": "claude-opus-4-20250514",
+    "tokens": { "input": 85000, "output": 32000 }
+  },
+  {
+    "content": "Fix SQL injection vulnerability",
+    "status": "completed",
+    "activeForm": "Fixing SQL injection vulnerability",
+    "id": "task-012",
+    "type": "bugfix",
+    "timestamp": "2025-01-23T11:00:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 8500, "output": 6200 }
+  },
+  {
+    "content": "Update dependencies with CVEs",
+    "status": "completed",
+    "activeForm": "Updating dependencies with CVEs",
+    "id": "task-013",
+    "type": "security",
+    "timestamp": "2025-01-23T12:30:00Z",
+    "model": "claude-haiku-3-5-20241022",
+    "tokens": { "input": 4200, "output": 2800 }
+  },
+  {
+    "content": "Generate security compliance report",
+    "status": "completed",
+    "activeForm": "Generating security compliance report",
+    "id": "task-014",
+    "type": "documentation",
+    "timestamp": "2025-01-23T14:00:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 11000, "output": 15500 }
+  }
+]

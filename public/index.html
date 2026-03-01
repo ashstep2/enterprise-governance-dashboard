@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Governance Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    .step-badge { cursor: pointer; transition: all 0.2s; }
+    .step-badge:hover { transform: scale(1.15); }
+    .step-insight { display: none; animation: slideIn 0.25s ease-out; }
+    .step-insight.active { display: block; }
+    .step-section { transition: box-shadow 0.3s, border-color 0.3s; }
+    .step-section.highlighted { box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4); border-color: rgba(99, 102, 241, 0.5); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .fab-pulse { animation: fabPulse 1.5s ease-in-out infinite; }
+    @keyframes fabPulse { 0%, 100% { box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); } 50% { box-shadow: 0 4px 24px rgba(99, 102, 241, 0.7), 0 0 0 8px rgba(99, 102, 241, 0.15); } }
+  </style>
+  <script>
+    let activeStep = null;
+    let tourActive = false;
+    const TOTAL_STEPS = 7;
+
+    function toggleStep(n, fromTour = false) {
+      if (event) event.stopPropagation();
+      const wasActive = activeStep === n;
+
+      // Close all
+      document.querySelectorAll('.step-insight').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.step-section').forEach(el => el.classList.remove('highlighted'));
+      document.querySelectorAll('.step-badge').forEach(el => {
+        el.classList.remove('ring-2', 'ring-offset-1', 'bg-brand-600');
+        el.classList.add('bg-brand-500');
+      });
+      activeStep = null;
+
+      // If closing and not from tour, end tour mode
+      if (wasActive && !fromTour) {
+        tourActive = false;
+        updateTourButton();
+        return;
+      }
+
+      // Open the step
+      const insight = document.getElementById('insight-' + n);
+      const section = document.getElementById('section-' + n);
+      const badge = document.getElementById('badge-' + n);
+      if (insight) insight.classList.add('active');
+      if (section) section.classList.add('highlighted');
+      if (badge) {
+        badge.classList.add('ring-2', 'ring-offset-1', 'bg-brand-600');
+        badge.classList.remove('bg-brand-500');
+      }
+      activeStep = n;
+
+      // Only scroll for steps 1, 2, and 7 (different viewport regions)
+      // Steps 3-6 are all visible in the same area, no scroll needed
+      if (section && (n <= 2 || n === 7)) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function startTour() {
+      tourActive = true;
+      updateTourButton();
+      toggleStep(1, true);
+    }
+
+    function nextStep() {
+      if (activeStep < TOTAL_STEPS) {
+        toggleStep(activeStep + 1, true);
+      }
+    }
+
+    function prevStep() {
+      if (activeStep > 1) {
+        toggleStep(activeStep - 1, true);
+      }
+    }
+
+    function endTour() {
+      tourActive = false;
+      updateTourButton();
+      // Close current step
+      document.querySelectorAll('.step-insight').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.step-section').forEach(el => el.classList.remove('highlighted'));
+      document.querySelectorAll('.step-badge').forEach(el => {
+        el.classList.remove('ring-2', 'ring-offset-1', 'bg-brand-600');
+        el.classList.add('bg-brand-500');
+      });
+      activeStep = null;
+    }
+
+    function updateTourButton() {
+      const fab = document.getElementById('tour-fab');
+      if (tourActive) {
+        fab.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg><span>End Tour</span>`;
+        fab.onclick = endTour;
+        fab.classList.remove('fab-pulse');
+      } else {
+        fab.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Take a Tour</span>`;
+        fab.onclick = startTour;
+      }
+    }
+
+      </script>
+</head>
+<body class="bg-[#f8f7f5] min-h-screen flex flex-col antialiased">
+
+  <!-- Header -->
+  <header class="bg-white/90 backdrop-blur-sm border-b border-slate-200/60 shrink-0">
+    <div class="max-w-[1400px] mx-auto px-5 py-2.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="white" opacity="0.9"/></svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-semibold text-slate-900">Enterprise Governance</h1>
+            <div class="flex items-center gap-1 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+              <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-slow"></div>
+              <span class="text-[10px] font-medium text-emerald-700">Live</span>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400">AI Coding Analytics &amp; Compliance Platform</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div id="section-1" class="step-section flex items-center gap-2 mr-2 px-2 py-1 rounded-lg border border-transparent cursor-pointer" onclick="toggleStep(1)">
+          <div id="badge-1" class="step-badge w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">1</div>
+          <div id="health-dot" class="w-2 h-2 rounded-full bg-slate-400 pulse-slow"></div>
+          <span id="health-text" class="text-xs font-medium text-slate-500">Loading...</span>
+          <span class="text-slate-200">|</span>
+          <span id="completion-rate" class="text-xs text-slate-400">--%</span>
+        </div>
+        <span id="date-display" class="text-[10px] text-slate-400"></span>
+        <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+    <!-- Step 1 Insight -->
+    <div id="insight-1" class="step-insight max-w-[1400px] mx-auto px-5 pb-3">
+      <div class="bg-brand-50 border border-brand-100 rounded-lg px-4 py-3">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-semibold text-brand-800">System Health: Auto-Scored Risk Indicator</p>
+          <span class="text-[10px] text-brand-500 font-medium">Step 1 of 7</span>
+        </div>
+        <p class="text-xs text-brand-700 leading-relaxed">Computed from task completion vs failure rates. >20% failures = Critical. >10% failures = Warning. This is the first thing an <strong>enterprise admin</strong> checks: "Is my fleet of AI agents healthy, or are they failing silently?"</p>
+        <p class="text-[10px] text-brand-500 mt-2">Enterprise need: Proactive alerting before issues become incidents. No manual monitoring required.</p>
+        <div class="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-brand-100">
+          <button onclick="nextStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-all">
+            Next <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1">
+    <div class="max-w-[1400px] mx-auto px-5 py-4 flex flex-col gap-3">
+
+      <!-- Top Row: KPIs -->
+      <div id="section-2" class="step-section grid grid-cols-4 gap-3 shrink-0 rounded-xl border border-transparent p-0.5 cursor-pointer" onclick="toggleStep(2)">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 p-3.5 relative">
+          <div id="badge-2" class="step-badge absolute -top-2 -left-2 w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">2</div>
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Sessions</p>
+          <p id="kpi-sessions" class="text-2xl font-bold text-slate-900 tabular-nums mt-1"><span class="skeleton inline-block w-8 h-6 rounded"></span></p>
+          <p class="text-[10px] text-slate-400 mt-0.5">.json files scanned</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 p-3.5">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Tasks</p>
+          <p id="kpi-tasks" class="text-2xl font-bold text-slate-900 tabular-nums mt-1"><span class="skeleton inline-block w-8 h-6 rounded"></span></p>
+          <p class="text-[10px] text-slate-400 mt-0.5">total entries parsed</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 p-3.5">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Tokens</p>
+          <p id="kpi-tokens" class="text-2xl font-bold text-slate-900 tabular-nums mt-1"><span class="skeleton inline-block w-20 h-6 rounded"></span></p>
+          <p id="kpi-tokens-detail" class="text-[10px] text-slate-400 mt-0.5">- in / - out</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 p-3.5">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Est. Cost</p>
+          <p id="kpi-cost" class="text-2xl font-bold text-brand-600 tabular-nums mt-1"><span class="skeleton inline-block w-14 h-6 rounded"></span></p>
+          <p class="text-[10px] text-slate-400 mt-0.5">$3/M in + $15/M out</p>
+        </div>
+      </div>
+      <!-- Step 2 Insight -->
+      <div id="insight-2" class="step-insight">
+        <div class="bg-brand-50 border border-brand-100 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-brand-800">Usage Volume: How Much Is Your Org Using AI?</p>
+            <span class="text-[10px] text-brand-500 font-medium">Step 2 of 7</span>
+          </div>
+          <p class="text-xs text-brand-700 leading-relaxed"><strong>Sessions</strong> = number of AI coding sessions that tracked tasks. <strong>Tasks</strong> = total work items across all sessions. <strong>Tokens</strong> = consumption for cost attribution. <strong>Cost</strong> = estimated spend at API rates.</p>
+          <p class="text-[10px] text-brand-500 mt-2">Enterprise need: Finance teams need cost attribution per team/project. This is the raw signal for chargebacks and budget forecasting.</p>
+          <div class="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-brand-100">
+            <button onclick="prevStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand-700 bg-white border border-brand-200 hover:bg-brand-50 rounded-lg transition-all">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+            </button>
+            <button onclick="nextStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-all">
+              Next <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Row: Charts + Table -->
+      <div class="grid grid-cols-12 gap-3" style="min-height: 300px;">
+
+        <!-- Left Column: Status + Patterns -->
+        <div class="col-span-3 flex flex-col gap-3">
+          <div id="section-3" class="step-section bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 flex-1 cursor-pointer" onclick="toggleStep(3)">
+            <div class="flex items-center gap-2 mb-3">
+              <div id="badge-3" class="step-badge w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">3</div>
+              <h2 class="text-xs font-semibold text-slate-700">Status Distribution</h2>
+            </div>
+            <div id="status-chart" class="space-y-2.5"></div>
+          </div>
+          <div id="section-4" class="step-section bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 flex-1 cursor-pointer" onclick="toggleStep(4)">
+            <div class="flex items-center gap-2 mb-3">
+              <div id="badge-4" class="step-badge w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">4</div>
+              <h2 class="text-xs font-semibold text-slate-700">Task Patterns</h2>
+            </div>
+            <div id="patterns-list" class="space-y-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Center: Recent Tasks -->
+        <div id="section-5" class="step-section col-span-6 bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 flex flex-col min-h-0 cursor-pointer" onclick="toggleStep(5)">
+          <div class="flex items-center gap-2 mb-2">
+            <div id="badge-5" class="step-badge w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">5</div>
+            <h2 class="text-xs font-semibold text-slate-700">Recent Activity</h2>
+            <span id="tasks-count" class="text-[10px] text-slate-400 ml-auto">- total</span>
+          </div>
+          <div class="flex-1 overflow-auto">
+            <div class="overflow-hidden">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="border-b border-slate-100">
+                    <th class="text-left py-1.5 px-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider w-20">Status</th>
+                    <th class="text-left py-1.5 px-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Task</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-body" class="divide-y divide-slate-50"></tbody>
+              </table>
+              <p id="tasks-more" class="text-[10px] text-slate-400 mt-1.5 px-2"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Models + Sessions -->
+        <div class="col-span-3 flex flex-col gap-3">
+          <div id="section-6" class="step-section bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 flex-1 cursor-pointer" onclick="toggleStep(6)">
+            <div class="flex items-center gap-2 mb-3">
+              <div id="badge-6" class="step-badge w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">6</div>
+              <h2 class="text-xs font-semibold text-slate-700">Model Usage</h2>
+            </div>
+            <div id="models-list" class="space-y-2"></div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 flex-1">
+            <h2 class="text-xs font-semibold text-slate-700 mb-1">Session Files</h2>
+            <p id="sessions-count" class="text-lg font-bold text-slate-800 tabular-nums">-</p>
+            <p class="text-[10px] text-slate-400 mb-2">~/.claude/todos/*.json</p>
+            <div id="sessions-dots" class="flex flex-wrap gap-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 Insight -->
+      <div id="insight-3" class="step-insight">
+        <div class="bg-brand-50 border border-brand-100 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-brand-800">Completion Rates: Are Tasks Finishing or Stalling?</p>
+            <span class="text-[10px] text-brand-500 font-medium">Step 3 of 7</span>
+          </div>
+          <p class="text-xs text-brand-700 leading-relaxed">Groups every task by its <code class="bg-brand-100 px-1 rounded">status</code> field. Progress bars show distribution at a glance.</p>
+          <p class="text-[10px] text-brand-500 mt-2">Enterprise need: Engineering managers spot bottlenecks immediately. If "in_progress" is growing but "completed" is flat, it means that agents are stuck.</p>
+          <div class="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-brand-100">
+            <button onclick="prevStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand-700 bg-white border border-brand-200 hover:bg-brand-50 rounded-lg transition-all">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+            </button>
+            <button onclick="nextStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-all">
+              Next <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 Insight -->
+      <div id="insight-4" class="step-insight">
+        <div class="bg-brand-50 border border-brand-100 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-brand-800">Pattern Detection: What Is AI Actually Doing?</p>
+            <span class="text-[10px] text-brand-500 font-medium">Step 4 of 7</span>
+          </div>
+          <p class="text-xs text-brand-700 leading-relaxed">Extracts the first 3 words of each task and clusters by frequency. Reveals what your team is repeatedly asking AI to do.</p>
+          <p class="text-[10px] text-brand-500 mt-2">Enterprise need: If 40% of tasks start with "Fix the build", you have a CI problem, not a productivity problem.</p>
+          <div class="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-brand-100">
+            <button onclick="prevStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand-700 bg-white border border-brand-200 hover:bg-brand-50 rounded-lg transition-all">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+            </button>
+            <button onclick="nextStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-all">
+              Next <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 Insight -->
+      <div id="insight-5" class="step-insight">
+        <div class="bg-brand-50 border border-brand-100 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-brand-800">Audit Trail: The Compliance Evidence</p>
+            <span class="text-[10px] text-brand-500 font-medium">Step 5 of 7</span>
+          </div>
+          <p class="text-xs text-brand-700 leading-relaxed">Every task the AI worked on, its status, and what it was doing. SOC2 and ISO27001 require evidence of AI governance.</p>
+          <p class="text-[10px] text-brand-500 mt-2">Enterprise need: This table is the evidence that shows what the AI was instructed to do and if it succeeded/failed.</p>
+          <div class="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-brand-100">
+            <button onclick="prevStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand-700 bg-white border border-brand-200 hover:bg-brand-50 rounded-lg transition-all">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+            </button>
+            <button onclick="nextStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-all">
+              Next <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 Insight -->
+      <div id="insight-6" class="step-insight">
+        <div class="bg-brand-50 border border-brand-100 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-brand-800">Model Governance: Which Models, At What Cost?</p>
+            <span class="text-[10px] text-brand-500 font-medium">Step 6 of 7</span>
+          </div>
+          <p class="text-xs text-brand-700 leading-relaxed">Tracks whether teams are using Haiku (cheap/fast), Sonnet (balanced), or Opus (expensive/powerful).</p>
+          <p class="text-[10px] text-brand-500 mt-2">Enterprise need: Policy enforcement. Cost control without blocking productivity.</p>
+          <div class="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-brand-100">
+            <button onclick="prevStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand-700 bg-white border border-brand-200 hover:bg-brand-50 rounded-lg transition-all">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+            </button>
+            <button onclick="nextStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-all">
+              Next <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Product Thesis -->
+      <div id="section-7" class="step-section shrink-0 bg-white rounded-xl shadow-sm border border-slate-200/60 px-4 py-3 cursor-pointer" onclick="toggleStep(7)">
+        <div class="flex items-center gap-2">
+          <div id="badge-7" class="step-badge w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">7</div>
+          <span class="text-xs font-semibold text-slate-700">The Product Thesis</span>
+          <span class="text-[10px] text-slate-400 ml-2">Why this matters for enterprises</span>
+        </div>
+      </div>
+      <div id="insight-7" class="step-insight">
+        <div class="bg-gradient-to-r from-brand-50 to-orange-50 border border-brand-200 rounded-lg px-5 py-4">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-semibold text-brand-900">AI coding tools need governance for enterprise adoption.</p>
+            <span class="text-[10px] text-brand-500 font-medium">Step 7 of 7</span>
+          </div>
+          <div class="grid grid-cols-3 gap-4 mt-3">
+            <div>
+              <p class="text-xs font-semibold text-slate-700 mb-1">The Gap</p>
+              <p class="text-xs text-slate-600 leading-relaxed">AI coding tools write task data. The next step is to provide aggregation, visualization, and alerting.</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-700 mb-1">The Opportunity</p>
+              <p class="text-xs text-slate-600 leading-relaxed">First-party governance = trust advantage. Third-party governance = someone else owns your customers' compliance layer. This should be built in.</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-700 mb-1">This Demo</p>
+              <p class="text-xs text-slate-600 leading-relaxed">Live API-backed dashboard.</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-brand-200">
+            <button onclick="prevStep()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand-700 bg-white border border-brand-200 hover:bg-brand-50 rounded-lg transition-all">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+            </button>
+            <button onclick="endTour()" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-all">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Finish Tour
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Floating Action Button for Tour -->
+  <button id="tour-fab" onclick="startTour()" class="fab-pulse fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 rounded-full shadow-lg transition-all">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span>Take a Tour</span>
+  </button>
+
+  <script>
+    const statusColors = {
+      completed: { bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-600/20', bar: 'bg-emerald-500' },
+      in_progress: { bg: 'bg-amber-50', text: 'text-amber-700', ring: 'ring-amber-600/20', bar: 'bg-amber-400' },
+      pending: { bg: 'bg-slate-50', text: 'text-slate-600', ring: 'ring-slate-500/20', bar: 'bg-slate-300' },
+      failed: { bg: 'bg-red-50', text: 'text-red-700', ring: 'ring-red-600/20', bar: 'bg-red-500' },
+    };
+
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return Math.round(num / 1000).toLocaleString() + ',000';
+      return num.toLocaleString();
+    }
+
+    function formatDate() {
+      return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    async function loadDashboard() {
+      try {
+        document.getElementById('date-display').textContent = formatDate();
+
+        // Single API call for all data - eliminates multiple cold starts
+        const res = await fetch('/api/dashboard');
+        const { success, metrics: d, patterns, recentTasks } = await res.json();
+
+        if (!success) return;
+
+        // KPIs
+        document.getElementById('kpi-sessions').textContent = d.totalSessions;
+        document.getElementById('kpi-tasks').textContent = d.totalTasks;
+        document.getElementById('kpi-tokens').textContent = formatNumber(d.tokenUsage.total);
+        document.getElementById('kpi-tokens-detail').textContent = `${formatNumber(d.tokenUsage.input)} in / ${formatNumber(d.tokenUsage.output)} out`;
+        document.getElementById('kpi-cost').textContent = '$' + d.totalCost.toFixed(2);
+        document.getElementById('completion-rate').textContent = d.completionRate + '%';
+        document.getElementById('tasks-count').textContent = d.totalTasks + ' total';
+        document.getElementById('sessions-count').textContent = d.totalSessions;
+
+        // Session dots
+        const dotsHtml = Array(d.totalSessions).fill('<div class="w-2 h-2 rounded-sm bg-brand-200"></div>').join('');
+        document.getElementById('sessions-dots').innerHTML = dotsHtml;
+
+        // Health status
+        const failureRate = (d.statusDistribution.failed || 0) / d.totalTasks;
+        const healthDot = document.getElementById('health-dot');
+        const healthText = document.getElementById('health-text');
+        if (failureRate < 0.05) {
+          healthDot.className = 'w-2 h-2 rounded-full bg-emerald-500 pulse-slow';
+          healthText.className = 'text-xs font-medium text-emerald-600';
+          healthText.textContent = 'Healthy';
+        } else if (failureRate < 0.15) {
+          healthDot.className = 'w-2 h-2 rounded-full bg-amber-500 pulse-slow';
+          healthText.className = 'text-xs font-medium text-amber-600';
+          healthText.textContent = 'Warning';
+        } else {
+          healthDot.className = 'w-2 h-2 rounded-full bg-red-500 pulse-slow';
+          healthText.className = 'text-xs font-medium text-red-600';
+          healthText.textContent = 'Critical';
+        }
+
+        // Status chart
+        const statusChart = document.getElementById('status-chart');
+        const statusOrder = ['completed', 'in_progress', 'pending', 'failed'];
+        statusChart.innerHTML = statusOrder
+          .filter(s => d.statusDistribution[s])
+          .map(status => {
+            const count = d.statusDistribution[status];
+            const pct = ((count / d.totalTasks) * 100).toFixed(1);
+            const colors = statusColors[status];
+            return `
+              <div class="mb-2.5">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-xs font-medium text-slate-600 capitalize">${status.replace('_', ' ')}</span>
+                  <span class="text-xs tabular-nums text-slate-400">${count} (${pct}%)</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                  <div class="h-1.5 rounded-full ${colors.bar}" style="width: ${pct}%"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+        // Models list
+        const modelsList = document.getElementById('models-list');
+        modelsList.innerHTML = Object.entries(d.modelDistribution)
+          .sort((a, b) => b[1] - a[1])
+          .map(([model, count]) => `
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-600 font-mono truncate">${model}</span>
+              <span class="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">${count}</span>
+            </div>
+          `).join('');
+
+        // Patterns list
+        const patternsList = document.getElementById('patterns-list');
+        patternsList.innerHTML = patterns.slice(0, 6).map(p => `
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-xs text-slate-600 truncate">${p.key}</span>
+            <span class="shrink-0 text-[10px] font-medium bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded-full">${p.count}x</span>
+          </div>
+        `).join('');
+
+        // Tasks table
+        const tbody = document.getElementById('tasks-body');
+        tbody.innerHTML = recentTasks.map(task => {
+          const colors = statusColors[task.status] || statusColors.pending;
+          return `
+            <tr class="hover:bg-slate-50/50">
+              <td class="py-1.5 px-2"><span class="inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium ring-1 ring-inset ${colors.bg} ${colors.text} ${colors.ring}">${task.status}</span></td>
+              <td class="py-1.5 px-2 text-slate-600 truncate max-w-[300px]">${task.content || 'Untitled'}</td>
+            </tr>
+          `;
+        }).join('');
+
+        const remaining = d.totalTasks - 8;
+        if (remaining > 0) {
+          document.getElementById('tasks-more').textContent = `+${remaining} more entries`;
+        }
+
+      } catch (err) {
+        console.error('Failed to load dashboard:', err);
+      }
+    }
+
+    // Initial load
+    loadDashboard();
+
+    // Auto-refresh every 60 seconds
+    setInterval(loadDashboard, 60000);
+  </script>
+</body>
+</html>

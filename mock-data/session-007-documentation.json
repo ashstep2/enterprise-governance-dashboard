@@ -1,0 +1,32 @@
+[
+  {
+    "content": "Generate API documentation from OpenAPI",
+    "status": "completed",
+    "activeForm": "Generating API documentation from OpenAPI",
+    "id": "task-023",
+    "type": "documentation",
+    "timestamp": "2025-01-25T14:00:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 32000, "output": 45000 }
+  },
+  {
+    "content": "Write developer onboarding guide",
+    "status": "completed",
+    "activeForm": "Writing developer onboarding guide",
+    "id": "task-024",
+    "type": "documentation",
+    "timestamp": "2025-01-25T15:30:00Z",
+    "model": "claude-sonnet-4-20250514",
+    "tokens": { "input": 18500, "output": 24000 }
+  },
+  {
+    "content": "Create architecture decision records",
+    "status": "in_progress",
+    "activeForm": "Creating architecture decision records",
+    "id": "task-025",
+    "type": "documentation",
+    "timestamp": "2025-01-25T16:45:00Z",
+    "model": "claude-opus-4-20250514",
+    "tokens": { "input": 52000, "output": 38000 }
+  }
+]
